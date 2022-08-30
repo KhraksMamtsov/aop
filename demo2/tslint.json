@@ -1,0 +1,25 @@
+{
+  "extends": ["tslint:latest", "tslint-config-prettier"],
+  "rules": {
+    "ban-types": false,
+    "interface-name": [true, "always-prefix"],
+    // TODO: allow devDependencies only in **/*.spec.ts files:
+    // waiting on https://github.com/palantir/tslint/pull/3708
+  //    "no-implicit-dependencies": [true, "dev"]
+    "no-shadowed-variable": [
+      true,
+      {
+    //    "class": true,
+    //    "enum": true,
+    //    "function": true,
+    //    "interface": false,
+    //    "namespace": true,
+        "typeAlias": false,
+        "typeParameter": false
+      }
+    ],
+    "variable-name": [true, "ban-keywords", "allow-leading-underscore"],
+    "no-empty": false,
+    "only-arrow-functions": false
+  }
+}

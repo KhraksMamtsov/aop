@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="app" data-dc-component="app">
+    <h1 data-dc-app-ref="title">TITLE</h1>
+    <div id="app1" data-dc-component="app">
+        <h1 data-dc-app-ref="title">TITLE1</h1>
+        <div id="app12" data-dc-component="app">
+            <h1 data-dc-app-ref="title">TITLE12</h1></div>
+    </div>
+    <div id="app2" data-dc-component="app">
+        <h1 data-dc-app-ref="title">TITLE2</h1>
+    </div>
+
+    <button data-dc-app-ref="btn" data-dc-component="btn">
+        <span data-dc-btn-ref="span">button</span>
+    </button>
+</div>
+
+<style>
+    [data-dc-component] {
+        outline: red 2px solid;
+        background: #444a;
+        padding: 10px;
+    }
+    h1 {
+        background: #ccc;
+    }
+</style>
+
+    <script src="node_modules/reflect-metadata/Reflect.js"></script>
+    <script src="build/main/index.js"></script>
+</body>
+</html>

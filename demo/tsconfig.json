@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "es2015",
+    "target": "es6",
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "allowJs": true,
+    "strict": true,
+    "isolatedModules": true,
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "rootDir": "src",
+    "moduleResolution": "node",
+    "experimentalDecorators": true
+  }
+}

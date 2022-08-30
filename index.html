@@ -1,0 +1,1778 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>AOP</title>
+
+	<link href="css/reset.css" rel="stylesheet">
+	<link href="css/reveal.css" rel="stylesheet">
+	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css"> -->
+
+	<link href="css/theme/black.css" rel="stylesheet">
+
+	<!-- Theme used for syntax highlighting of code -->
+	<link href="lib/css/monokai.css" rel="stylesheet">
+
+	<!-- Printing and PDF exports -->
+	<script>
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.type = 'text/css';
+		link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+		document.getElementsByTagName('head')[0].appendChild(link);
+	</script>
+
+	<style>
+		.reveal section svg.img__code,
+		.reveal section img.img__code {
+			padding: 30px;
+			border: none;
+			border-radius: 10px;
+			background: #272822;
+			box-sizing: border-box;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+		}
+
+		.animated {
+			-webkit-animation-duration: 1s;
+			animation-duration: 1s;
+			-webkit-animation-fill-mode: both;
+			animation-fill-mode: both;
+			-webkit-animation-iteration-count: infinite;
+			animation-iteration-count: infinite;
+		}
+
+		@keyframes pulse {
+			0% {
+				transform: scaleX(1)
+			}
+
+			50% {
+				transform: scale3d(1.2, 1.2, 1.2)
+			}
+
+			to {
+				transform: scaleX(1)
+			}
+		}
+
+		svg .fragment:not(.invisible) {
+			opacity: 1 !important;
+			visibility: visible !important;
+		}
+
+		svg .pulse.current-fragment {
+			-webkit-animation-name: pulse;
+			animation-name: pulse;
+		}
+
+		svg .svg-aspect__join-point:not(.invisible) {
+			visibility: hidden !important;
+		}
+
+		svg .svg-aspect__join-point.current-fragment:not(.invisible) {
+			visibility: visible !important;
+		}
+	</style>
+
+	<style>
+		@font-face {
+			font-family: 'M PLUS Rounded 1c';
+			font-style: normal;
+			font-weight: 900;
+			font-display: swap;
+			src: url("fonts/MPLUSRounded1c-Black.ttf") format('truetype');
+		}
+
+		.reveal,
+		.reveal h1 {
+			font-family: 'M PLUS Rounded 1c', sans-serif;
+			font-weight: 900;
+			font-style: normal;
+		}
+
+		.reveal h1 {
+			display: inline-block;
+		}
+
+		.title__row {
+			display: flex;
+			align-items: baseline;
+		}
+
+		.title__logic {
+			color: #a6e22e;
+			text-shadow: #86bc1a 0px 0 0.3em;
+			-webkit-text-stroke: .05em #86bc1a;
+		}
+
+		.title__aspect {
+			font-size: .5em;
+			margin-left: .5em;
+		}
+
+		.reveal .title__aspect--log a,
+		.reveal .title__aspect--cache a,
+		.reveal .title__aspect--error a,
+		.reveal .title__aspect--under a,
+		.reveal .title__aspect--some a {
+			color:inherit;
+		}
+
+		.title__aspect--log {
+			color: #0fffff;
+			text-shadow: #00d6d6 0px 0 0.3em;
+			-webkit-text-stroke: .05em #00d6d6;
+		}
+
+		.title__aspect--cache {
+			color: #fd8f12;
+			text-shadow: #d47202 0px 0 0.3em;
+			-webkit-text-stroke: .05em #d47202;
+		}
+
+		.title__aspect--error {
+			color: #f91569;
+			text-shadow: #d10550 0px 0 0.3em;
+			-webkit-text-stroke: .05em #d10550;
+		}
+
+		.title__aspect--some {
+			color: #dbca33;
+			text-shadow: #b6a720 0px 0 0.3em;
+			-webkit-text-stroke: .05em #b6a720;
+		}
+
+		.title__aspect--under {
+			color: #630fff;
+			text-shadow: #4b00d6 0px 0 0.3em;
+			-webkit-text-stroke: .05em #4b00d6;
+		}
+
+		.blink {
+			animation: blink linear infinite 2s;
+		}
+
+		.blink--invert {
+			animation: blink--invert linear infinite 3s;
+		}
+
+		.animation-delay--5 {
+			animation-delay: .33s;
+		}
+
+		.animation-delay--10 {
+			animation-delay: .77s;
+		}
+
+		.glow {
+			animation: glow 1.5s ease-in-out infinite alternate;
+		}
+
+		@keyframes glow {
+			from {
+				text-shadow:
+					currentColor 0 0 0.01em,
+					currentColor 0 0 0.2em;
+			}
+
+			to {
+				text-shadow:
+					currentColor 0 0 0.1em,
+					currentColor 0 0 0.3em;
+			}
+		}
+
+
+		@keyframes blink {
+			78% {
+				color: inherit;
+				-webkit-text-stroke-width: .05em;
+				text-shadow: inherit;
+			}
+
+			79% {
+				color: transparent;
+				-webkit-text-stroke-width: 0;
+			}
+
+			80% {
+
+				text-shadow: none;
+			}
+
+			81% {
+				color: inherit;
+				-webkit-text-stroke-width: .05em;
+				text-shadow: inherit;
+			}
+
+			82% {
+				color: transparent;
+				-webkit-text-stroke-width: 0;
+				text-shadow: none;
+			}
+
+			83% {
+				color: inherit;
+				-webkit-text-stroke-width: .05em;
+				text-shadow: inherit;
+			}
+
+			92% {
+				color: transparent;
+				-webkit-text-stroke-width: 0;
+				text-shadow: none;
+			}
+
+			92.5% {
+				color: inherit;
+				-webkit-text-stroke-width: .05em;
+				text-shadow: inherit;
+			}
+		}
+
+		@keyframes blink--invert {
+			0% {
+				color: transparent;
+				-webkit-text-stroke-width: 0;
+				text-shadow: none;
+			}
+
+			25% {
+				color: transparent;
+				-webkit-text-stroke-width: 0;
+				text-shadow: none;
+			}
+
+			30% {
+				color: inherit;
+				-webkit-text-stroke-width: .05em;
+				text-shadow: inherit;
+			}
+
+
+			75% {
+				color: inherit;
+				-webkit-text-stroke-width: .05em;
+				text-shadow: inherit;
+			}
+
+			77% {
+				color: transparent;
+				-webkit-text-stroke-width: 0;
+				text-shadow: none;
+			}
+
+			78% {
+				color: inherit;
+				-webkit-text-stroke-width: .05em;
+				text-shadow: inherit;
+			}
+
+			79% {
+				color: transparent;
+				-webkit-text-stroke-width: 0;
+			}
+
+			80% {
+
+				text-shadow: none;
+			}
+
+			81% {
+				color: inherit;
+				-webkit-text-stroke-width: .05em;
+				text-shadow: inherit;
+			}
+
+			82% {
+				color: transparent;
+				-webkit-text-stroke-width: 0;
+				text-shadow: none;
+			}
+
+			83% {
+				color: inherit;
+				-webkit-text-stroke-width: .05em;
+				text-shadow: inherit;
+			}
+
+			92% {
+				color: transparent;
+				-webkit-text-stroke-width: 0;
+				text-shadow: none;
+			}
+
+			92.5% {
+				color: inherit;
+				-webkit-text-stroke-width: .05em;
+				text-shadow: inherit;
+			}
+
+			100% {
+				color: transparent;
+				-webkit-text-stroke-width: 0;
+				text-shadow: none;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section>
+				<h1 class="title">
+					<span class="title__row">
+						<span class="title__logic glow">А</span>
+						<span class="title__aspect title__aspect--log glow">спектно</span>
+					</span>
+					<span class="title__row">
+						<span class="title__logic glow">О</span>
+						<span class="title__aspect title__aspect--error glow">риентированное</span>
+					</span>
+					<span class="title__row">
+						<span class="title__logic glow">П</span>
+						<span class="title__aspect title__aspect--cache glow">
+							<span class="blink">рограммирование</span>
+						</span>
+					</span>
+				</h1>
+				<p class="fragment">
+					<span class="title__aspect--under glow">
+						<span class="blink--invert">
+							C примерами на
+						</span>
+					</span> <span class="title__aspect--some glow"><span class="blink--invert">
+							JS
+						</span></span>
+				</p>
+				<aside class="notes">
+					Примеры будут на JS.
+				</aside>
+			</section>
+			<section>
+				<section>
+					<h1 class="title">
+						<span class="title__row">
+							<span class="title__logic glow">
+								<span class="blink--invert">П</span>
+							</span>
+							<span class="title__aspect title__aspect--error glow">остановка</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">З</span>
+							<span class="title__aspect title__aspect--log glow">адачи</span>
+						</span>
+					</h1>
+				</section>
+				<section data-transition="none">
+					<img class="img__code" src="./img/1.png">
+					<aside class="notes">
+						<p>Рассмотрим сферический класс в вакууме с единственным и очень простым методом, который
+							реализует бизнесс требование.</p>
+						<p>Метод чрезвычайно прост и понятен.</p>
+						<p>Но чего-то не хватает</p>
+					</aside>
+				</section>
+				<section data-transition="none" style="height: 100%">
+					<img class="img__code" src="./img/2.png">
+					<aside class="notes">
+						<p>Конечно!</p>
+						<p>Как же обработка ошибок!</p>
+						<p>Добавим try-catch, чтобы обработать этот кейс</p>
+					</aside>
+				</section>
+				<section data-transition="none" style="height: 100%">
+					<img class="img__code" src="./img/3.png">
+					<aside class="notes">
+						<p>Что-то перфоманс проседает</p>
+						<p>Добалю-ка я кэширование</p>
+					</aside>
+				</section>
+				<section data-transition="none" style="height: 100%">
+					<img class="img__code" src="./img/4.png">
+					<aside class="notes">
+						<p>Припорошу логированием</p>
+						<p>Отлично! Well designet class!</p>
+						<p>Недостатки:</p>
+						<ul>
+							<li>Нарушение принципа S Solid</li>
+							<li>Монструозность</li>
+							<li>Размызвание функциональности</li>
+							<li>Тяжело читать</li>
+							<li>На одну строку бизнесс действия приходится много строк "обвязки"</li>
+						</ul>
+
+						<p>
+							Такую функциональность называют «сквозной» или «разбросанной», в виду того, что её
+							реализация действительно разбросана по разным частям приложения.
+						</p>
+					</aside>
+				</section>
+				<section data-transition="none" style="height: 100%">
+					<img class="img__code" src="./img/5.png">
+					<aside class="notes">
+						<p>Теперь представим, что мы вернулись из отпуска.</p>
+						<p>Или пришли из другого проекта.</p>
+					</aside>
+				</section>
+				<section style="height: 100%">
+					<img class="img__code" src="./img/6.png">
+					<aside class="notes">
+						<p>
+							Хочется как-то вот так.
+						</p>
+					</aside>
+				</section>
+			</section>
+			<section>
+				<section>
+					<h1 class="title">
+						<span class="title__row">
+							<span class="title__logic glow">?</span>
+							<span class="title__aspect title__aspect--log glow">wtf</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">?</span>
+							<span class="title__aspect title__aspect--error glow">и чо</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">⁉️</span>
+							<span class="title__aspect title__aspect--cache glow">
+								<span class="blink--invert">%!@*/#^$&</span>
+							</span>
+						</span>
+					</h1>
+
+					<aside class="notes">
+						Так причем тут АОП?
+					</aside>
+				</section>
+
+				<section style="height: 100%;">
+					<svg class="img__code" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+						version="1.1" width="100%" height="100%" viewBox="-0.5 -0.5 707 467">
+						<defs>
+							<linearGradient x1="0%" y1="0%" x2="0%" y2="100%" id="mx-gradient-a6e22e-1-0fffff-1-s-0">
+								<stop offset="0%" style="stop-color:#F91569"></stop>
+								<stop offset="33%" style="stop-color:#FD8F12"></stop>
+								<stop offset="66%" style="stop-color:#A6E22E"></stop>
+								<stop offset="100%" style="stop-color:#00d6d6"></stop>
+							</linearGradient>
+						</defs>
+						<g>
+							<rect x="3" y="243" width="200" height="220" rx="30" ry="30"
+								fill="url(#mx-gradient-a6e22e-1-0fffff-1-s-0)" stroke="none" pointer-events="none">
+							</rect>
+							<rect x="3" y="3" width="200" height="220" rx="30" ry="30"
+								fill="url(#mx-gradient-a6e22e-1-0fffff-1-s-0)" stroke="none" pointer-events="none">
+							</rect>
+							<rect x="323" y="183" width="200" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+								stroke-width="7" pointer-events="none"></rect>
+							<rect x="323" y="63" width="200" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+								stroke-width="7" pointer-events="none"></rect>
+							<rect x="323" y="123" width="200" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+								stroke-width="7" pointer-events="none"></rect>
+							<rect x="543" y="3" width="40" height="460" rx="6" ry="6" fill="#f91569" stroke="#d10550"
+								stroke-width="7" pointer-events="none"></rect>
+							<rect x="323" y="423" width="200" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+								stroke-width="7" pointer-events="none"></rect>
+							<rect x="323" y="303" width="200" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+								stroke-width="7" pointer-events="none"></rect>
+							<rect x="323" y="363" width="200" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+								stroke-width="7" pointer-events="none"></rect>
+							<rect x="323" y="243" width="200" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+								stroke-width="7" pointer-events="none"></rect>
+							<rect x="323" y="3" width="200" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+								stroke-width="7" pointer-events="none"></rect>
+							<rect x="603" y="3" width="40" height="460" rx="6" ry="6" fill="#0fffff" stroke="#00d6d6"
+								stroke-width="7" pointer-events="none"></rect>
+							<rect x="663" y="3" width="40" height="460" rx="6" ry="6" fill="#fd8f12" stroke="#d47202"
+								stroke-width="7" pointer-events="none"></rect>
+						</g>
+					</svg>
+					<aside class="notes">
+						<p>Выделение сквозной функциональности в модули.</p>
+					</aside>
+				</section>
+				<section style="height: 100%">
+					<svg class="img__code" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+						version="1.1" width="100%" height="100%" viewBox="-0.5 -0.5 1218 968">
+
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 270.16 203.67 L 283.16 197.17 L 283.16 210.17 Z" fill="#d47202" stroke="#d47202"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+
+
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 803 83.67 L 542.33 83.67 Q 532.33 83.67 522.33 83.67 L 283.16 83.67" fill="none"
+							stroke="#d10550" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 270.16 83.67 L 283.16 77.17 L 283.16 90.17 Z" fill="#d10550" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 803 83.67 L 632.33 83.67 Q 622.33 83.67 622.33 93.67 L 622.33 633.67 Q 622.33 643.67 612.33 643.67 L 283.16 643.67"
+							fill="none" stroke="#d10550" stroke-width="7" stroke-miterlimit="10" pointer-events="none">
+						</path>
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 270.16 643.67 L 283.16 637.17 L 283.16 650.17 Z" fill="#d10550" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+
+
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 803 423.67 L 712.33 423.67 Q 702.33 423.67 702.33 413.67 L 702.33 153.67 Q 702.33 143.67 692.33 143.67 L 283.16 143.67"
+							fill="none" stroke="#00d6d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none">
+						</path>
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 270.16 143.67 L 283.16 137.17 L 283.16 150.17 Z" fill="#00d6d6" stroke="#00d6d6"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 803 423.67 L 712.33 423.67 Q 702.33 423.67 702.33 433.67 L 702.33 693.67 Q 702.33 703.67 692.33 703.67 L 283.16 703.67"
+							fill="none" stroke="#00d6d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none">
+						</path>
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 270.16 703.67 L 283.16 697.17 L 283.16 710.17 Z" fill="#00d6d6" stroke="#00d6d6"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 803 763.67 L 542.33 763.67 Q 532.33 763.67 522.33 763.67 L 283.16 763.67" fill="none"
+							stroke="#d47202" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 270.16 763.67 L 283.16 757.17 L 283.16 770.17 Z" fill="#d47202" stroke="#d47202"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 803 763.67 L 672.33 763.67 Q 662.33 763.67 662.33 753.67 L 662.33 213.67 Q 662.33 203.67 652.33 203.67 L 283.16 203.67"
+							fill="none" stroke="#d47202" stroke-width="7" stroke-miterlimit="10" pointer-events="none">
+						</path>
+
+						<rect class="fragment animated pulse svg-aspect__target" data-fragment-index="6"
+							style="transform-origin: 103px 23px;" x="3" y="3" width="200" height="40" rx="6" ry="6"
+							fill="#a6e22e" stroke="#86bc1a" stroke-width="7" pointer-events="none"></rect>
+
+						<rect x="123" y="303" width="200" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+							stroke-width="7" pointer-events="none"></rect>
+
+						<rect x="123" y="363" width="90" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+							stroke-width="7" pointer-events="none"></rect>
+
+						<rect class="fragment animated pulse svg-aspect__introduction svg-aspect__introduction--error"
+							data-fragment-index="5" style="transform-origin: 163px 83px;" x="63" y="63" width="200"
+							height="40" rx="6" ry="6" fill="#f91569" stroke="#d10550" stroke-width="7"
+							pointer-events="none"></rect>
+						<rect class="fragment animated pulse svg-aspect__introduction svg-aspect__introduction--log"
+							data-fragment-index="5" style="transform-origin: 163px 143px;" x="63" y="123" width="200"
+							height="40" rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7"
+							pointer-events="none"></rect>
+						<rect class="fragment animated pulse svg-aspect__introduction svg-aspect__introduction--cache"
+							data-fragment-index="5" style="transform-origin: 163px 203px;" x="63" y="183" width="200"
+							height="40" rx="6" ry="6" fill="#fd8f12" stroke="#d47202" stroke-width="7"
+							pointer-events="none"></rect>
+
+						<rect class="fragment animated pulse svg-aspect__pointcut" data-fragment-index="4"
+							style="transform-origin: 343px 263px;" x="63" y="243" width="560" height="40" rx="6" ry="6"
+							fill="#a6e22e" stroke="#86bc1a" stroke-width="7" pointer-events="none"></rect>
+
+						<rect class="fragment animated pulse svg-aspect__join-point" data-fragment-index="3"
+							style="transform-origin: 343px 263px;" x="63" y="243" width="560" height="40" rx="6" ry="6"
+							fill="#a6e22e" stroke="#86bc1a" stroke-width="7" pointer-events="none"></rect>
+
+
+
+
+						<rect class="fragment animated pulse svg-aspect__target" data-fragment-index="6"
+							style="transform-origin: 103px 583px;" x="3" y="563" width="200" height="40" rx="6" ry="6"
+							fill="#a6e22e" stroke="#86bc1a" stroke-width="7" pointer-events="none"></rect>
+
+						<rect x="123" y="863" width="200" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+							stroke-width="7" pointer-events="none"></rect>
+
+						<rect x="123" y="923" width="90" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+							stroke-width="7" pointer-events="none"></rect>
+
+						<rect class="fragment animated pulse svg-aspect__introduction svg-aspect__introduction--error"
+							data-fragment-index="5" style="transform-origin: 163px 643px;" x="63" y="623" width="200"
+							height="40" rx="6" ry="6" fill="#f91569" stroke="#d10550" stroke-width="7"
+							pointer-events="none"></rect>
+						<rect class="fragment animated pulse svg-aspect__introduction svg-aspect__introduction--log"
+							data-fragment-index="5" style="transform-origin: 163px 703px;" x="63" y="683" width="200"
+							height="40" rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7"
+							pointer-events="none"></rect>
+						<rect class="fragment animated pulse svg-aspect__introduction svg-aspect__introduction--cache"
+							data-fragment-index="5" style="transform-origin: 163px 763px;" x="63" y="743" width="200"
+							height="40" rx="6" ry="6" fill="#fd8f12" stroke="#d47202" stroke-width="7"
+							pointer-events="none"></rect>
+
+						<rect class="fragment animated pulse svg-aspect__pointcut" data-fragment-index="4"
+							style="transform-origin: 343px 823px;" x="63" y="803" width="560" height="40" rx="6" ry="6"
+							fill="#a6e22e" stroke="#86bc1a" stroke-width="7" pointer-events="none"></rect>
+
+						<g class="svg-aspect svg-aspect--error">
+							<rect x="743" y="3" width="200" height="40" rx="6" ry="6" fill="#f91569" stroke="#d10550"
+								stroke-width="7" pointer-events="none"></rect>
+							<g class="svg-aspect__advice">
+								<rect x="803" y="63" width="410" height="40" rx="6" ry="6" fill="#f91569"
+									stroke="#d10550" stroke-width="7" pointer-events="none"></rect>
+								<rect x="863" y="123" width="200" height="40" rx="6" ry="6" fill="#f91569"
+									stroke="#d10550" stroke-width="7" pointer-events="none"></rect>
+								<rect x="863" y="183" width="90" height="40" rx="6" ry="6" fill="#f91569"
+									stroke="#d10550" stroke-width="7" pointer-events="none"></rect>
+							</g>
+						</g>
+
+						<g class="svg-aspect svg-aspect--log">
+							<rect class="fragment animated pulse" data-fragment-index="1"
+								style="transform-origin: 843px 363px;" x="743" y="343" width="200" height="40" rx="6"
+								ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7" pointer-events="none"></rect>
+							<g class="svg-aspect__advice">
+								<rect class="fragment animated pulse" data-fragment-index="2"
+									style="transform-origin: 1008px 423px;" x="803" y="403" width="410" height="40"
+									rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7"
+									pointer-events="none"></rect>
+								<rect class="fragment animated pulse" data-fragment-index="2"
+									style="transform-origin: 963px 483px;" x="863" y="463" width="200" height="40"
+									rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7"
+									pointer-events="none"></rect>
+								<rect class="fragment animated pulse" data-fragment-index="2"
+									style="transform-origin: 908px 543px;" x="863" y="523" width="90" height="40" rx="6"
+									ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7" pointer-events="none">
+								</rect>
+							</g>
+						</g>
+
+						<g class="svg-aspect svg-aspect--cache">
+							<rect x="743" y="683" width="200" height="40" rx="6" ry="6" fill="#fd8f12" stroke="#d47202"
+								stroke-width="7" pointer-events="none"></rect>
+							<g class="svg-aspect__advice">
+								<rect x="803" y="743" width="410" height="40" rx="6" ry="6" fill="#fd8f12"
+									stroke="#d47202" stroke-width="7" pointer-events="none"></rect>
+								<rect x="863" y="803" width="200" height="40" rx="6" ry="6" fill="#fd8f12"
+									stroke="#d47202" stroke-width="7" pointer-events="none"></rect>
+								<rect x="863" y="863" width="90" height="40" rx="6" ry="6" fill="#fd8f12"
+									stroke="#d47202" stroke-width="7" pointer-events="none"></rect>
+							</g>
+						</g>
+					</svg>
+
+					<aside class="notes">
+						<p>В концепции АОП фигурируют 7 понятий. Давайте их рассмотрим.</p>
+						<ul>
+							<li><b>аспект (aspect)</b> – модуль или класс, реализующий сквозную функциональность. Аспект
+								изменяет поведение остального кода, применяя совет в точках соединения, определённых
+								некоторым срезом. Так же аспект может использоваться для внедрения функциональности;
+							</li>
+							<li><b>совет (advice)</b> – дополнительная логика — код, который должен быть вызван из точки
+								соединения. Совет может быть выполнен до, после или вместо точки соединения;</li>
+							<li><b>точка соединения (join point)</b> — точка в выполняемой программе (вызов метода,
+								создание
+								объекта, обращение к переменной), где следует применить совет ;</li>
+							<li><b>срез (pointcut)</b> — набор точек соединения. Срез определяет, подходит ли данная
+								точка
+								соединения к заданному совету;</li>
+							<li><b>внедрение (introduction)</b> — изменение структуры класса и/или изменение иерархии
+								наследования для добавления функциональности аспекта в инородный код;</li>
+							<li><b>цель (target)</b> – объект, к которому будут применяться советы;</li>
+							<li><b>переплетение (weaving)</b> – связывание объектов с соответствующими аспектами
+								(возможно на
+								этапе компиляции, загрузки или выполнения программы).</li>
+						</ul>
+					</aside>
+				</section>
+			</section>
+			<section>
+
+				<section>
+					<h1 class="title">
+						<span class="title__row">
+							<span class="title__logic glow"><span class="blink">С</span></span>
+							<span class="title__aspect title__aspect--cache glow">вязывание</span>
+						</span>
+					</h1>
+				</section>
+				<section>
+					<svg class="img__code" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+						version="1.1" width="100%" height="100%" viewBox="-0.5 -0.5 887 142">
+						<path class="fragment invisible" data-fragment-index="5"
+							d="M 603.17 50.33 L 603.17 20.33 Q 603.17 10.33 613.17 10.33 L 753.17 10.33 Q 763.17 10.33 763.17 20.33 L 763.17 120.33 Q 763.17 130.33 753.17 130.33 L 613.17 130.33 Q 603.17 130.33 603.17 120.75 L 603.17 111.16"
+							fill="none" stroke="#4b00d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none">
+						</path>
+						<rect class="fragment invisible" data-fragment-index="2" class="fragment invisible"
+							data-fragment-index="0" x="483" y="50" width="160" height="40" rx="6" ry="6" fill="#f91569"
+							stroke="#d10550" stroke-width="7" pointer-events="none"></rect>
+						<path class="fragment invisible" data-fragment-index="4"
+							d="M 403 70.33 L 443.17 70.33 L 462.34 70.33" fill="none" stroke="#00d6d6" stroke-width="7"
+							stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="4"
+							d="M 475.34 70.33 L 462.34 76.83 L 462.34 63.83 Z" fill="#00d6d6" stroke="#00d6d6"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<rect class="fragment invisible" data-fragment-index="1" x="243" y="50" width="160" height="40"
+							rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7" pointer-events="none"></rect>
+						<path class="fragment invisible" data-fragment-index="3"
+							d="M 163 70.33 L 203.17 70.33 L 222.34 70.33" fill="none" stroke="#d47202" stroke-width="7"
+							stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="3"
+							d="M 235.34 70.33 L 222.34 76.83 L 222.34 63.83 Z" fill="#d47202" stroke="#d47202"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<rect class="fragment invisible" data-fragment-index="0" x="3" y="50" width="160" height="40"
+							rx="6" ry="6" fill="#94907a" stroke="#77735f" stroke-width="7" pointer-events="none"></rect>
+						<rect class="fragment invisible" data-fragment-index="5" x="722.5" y="50" width="160"
+							height="40" rx="6" ry="6" fill="#dbca33" stroke="#b6a720" stroke-width="7"
+							pointer-events="none"></rect>
+						<path class="fragment invisible" data-fragment-index="5"
+							d="M 603.17 98.16 L 609.67 111.16 L 596.67 111.16 Z" fill="#4b00d6" stroke="#4b00d6"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+					</svg>
+					<aside class="notes">
+						<p>На примере этой диаграммы рассмотрим связывание<p>
+								<ol>
+									<li>Исходники</li>
+									<li>Исполняемый код</li>
+									<li>Выполняющаяся программма</li>
+								</ol>
+								<br />
+								<ol>
+									<li>Компиляция</li>
+									<li>Инициализация</li>
+									<li>Исполнение</li>
+								</ol>
+					</aside>
+				</section>
+				<section style="height: 100%;">
+					<svg class="img__code" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+						version="1.1" width="100%" height="100%" viewBox="-0.5 -0.5 407 367">
+						<g>
+							<rect x="243" y="3" width="160" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+								stroke-width="7" pointer-events="none"></rect>
+							<path d="M 163 23 L 222.17 23" fill="none" stroke="#d47202" stroke-width="7"
+								stroke-miterlimit="10" pointer-events="none"></path>
+							<path d="M 235.17 23 L 222.17 29.5 L 222.17 16.5 Z" fill="#d47202" stroke="#d47202"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<rect x="3" y="3" width="160" height="40" rx="6" ry="6" fill="#94907a" stroke="#77735f"
+								stroke-width="7" pointer-events="none"></rect>
+						</g>
+
+						<rect class="fragment invisible" data-fragment-index="1" x="243" y="123" width="160"
+							height="240" rx="24" ry="24" fill="#94907a" stroke="#77735f" stroke-width="7"
+							pointer-events="none"></rect>
+						<rect class="fragment invisible" data-fragment-index="0" x="3" y="163" width="160" height="160"
+							rx="24" ry="24" fill="#94907a" stroke="#77735f" stroke-width="7" pointer-events="none">
+						</rect>
+						<rect class="fragment invisible" data-fragment-index="2" x="253" y="163" width="140" height="40"
+							rx="6" ry="6" fill="#fd8f12" stroke="#d47202" stroke-width="7" pointer-events="none"></rect>
+						<rect class="fragment invisible" data-fragment-index="3" x="253" y="283" width="140" height="40"
+							rx="6" ry="6" fill="#fd8f12" stroke="#d47202" stroke-width="7" pointer-events="none"></rect>
+						<rect class="fragment invisible" data-fragment-index="4" x="243" y="123" width="160"
+							height="240" rx="24" ry="24" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+							pointer-events="none"></rect>
+					</svg>
+					<aside class="notes">
+						<p>Связывание во время компиляции заключается во внедрении, дополнении, инструментировании
+							исходного кода.</p>
+						<ul>
+							<li>Декораторы TS</li>
+							<li>Svelte, Angular, Vue, React template - преобразование шаблонов в рендер функции и
+								внедрение их в логику работы.</li>
+							<li>Post sharp</li>
+							<li>babel-plugin-macros</li>
+						</ul>
+					</aside>
+				</section>
+				<section style="height: 100%;">
+					<svg class="img__code" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+						version="1.1" width="100%" height="100%" viewBox="-0.5 -0.5 407 287">
+						<g>
+							<rect x="243" y="3" width="160" height="40" rx="6" ry="6" fill="#f91569" stroke="#d10550"
+								stroke-width="7" pointer-events="none"></rect>
+							<path d="M 163 23 L 222.17 23" fill="none" stroke="#00d6d6" stroke-width="7"
+								stroke-miterlimit="10" pointer-events="none"></path>
+							<path d="M 235.17 23 L 222.17 29.5 L 222.17 16.5 Z" fill="#00d6d6" stroke="#00d6d6"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<rect x="3" y="3" width="160" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+								stroke-width="7" pointer-events="none"></rect>
+						</g>
+						<rect class="fragment invisible" data-fragment-index="1" x="243" y="123" width="110"
+							height="160" rx="16.5" ry="16.5" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+							pointer-events="none"></rect>
+						<rect class="fragment invisible" data-fragment-index="2" x="363" y="123" width="40" height="160"
+							rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7" pointer-events="none"></rect>
+						<rect class="fragment invisible" data-fragment-index="3" x="243" y="123" width="160"
+							height="160" rx="24" ry="24" fill="#f91569" stroke="#d10550" stroke-width="7"
+							pointer-events="none"></rect>
+						<rect class="fragment invisible" data-fragment-index="0" x="3" y="123" width="160" height="160"
+							rx="24" ry="24" fill="#a6e22e" stroke="#86bc1a" stroke-width="7" pointer-events="none">
+						</rect>
+					</svg>
+					<aside class="notes">
+						<p>Связывание на этапе инициализации говорит само за себя</p>
+						<p>Выполнения связывания до исполнения клиентского кода</p>
+						<ul>
+							<li>Angular</li>
+							<li>vue-class-component</li>
+							<li>strudel.js</li>
+						</ul>
+					</aside>
+				</section>
+				<section style="height: 100%">
+					<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
+						width="100%" height="100%" viewBox="-0.5 -0.5 407 334">
+						<g>
+							<path
+								d="M 123 50 L 123 20 Q 123 10 133 10 L 273 10 Q 283 10 283 20 L 283 120 Q 283 130 273 130 L 133 130 Q 123 130 123 120.41 L 123 110.83"
+								fill="none" stroke="#4b00d6" stroke-width="7" stroke-miterlimit="10"
+								pointer-events="none"></path>
+							<rect x="3" y="50" width="160" height="40" rx="6" ry="6" fill="#f91569" stroke="#d10550"
+								stroke-width="7" pointer-events="none"></rect>
+							<rect x="243" y="50" width="160" height="40" rx="6" ry="6" fill="#dbca33" stroke="#b6a720"
+								stroke-width="7" pointer-events="none"></rect>
+							<path d="M 123 97.83 L 129.5 110.83 L 116.5 110.83 Z" fill="#4b00d6" stroke="#4b00d6"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						</g>
+						<rect class="fragment invisible" data-fragment-index="0" x="3" y="170" width="160" height="160"
+							rx="24" ry="24" fill="#f91569" stroke="#d10550" stroke-width="7" pointer-events="none">
+						</rect>
+						<rect class="fragment invisible" data-fragment-index="1" x="243" y="170" width="160"
+							height="160" rx="24" ry="24" fill="#dbca33" stroke="#b6a720" stroke-width="7"
+							pointer-events="none"></rect>
+						<rect class="fragment invisible" data-fragment-index="2" x="243" y="170" width="160"
+							height="160" rx="24" ry="24" fill="#630fff" stroke="#4b00d6" stroke-width="7"
+							pointer-events="none"></rect>
+						<rect class="fragment invisible" data-fragment-index="3" x="243" y="170" width="160"
+							height="160" rx="24" ry="24" fill="#f91569" stroke="#d10550" stroke-width="7"
+							pointer-events="none"></rect>
+					</svg>
+					<aside class="notes">
+						<p>Конструирование объекта динамически по конфигу</p>
+						<p>Пример вью компонента - создание компонента в рантайме из конфига и регистрация его в
+							реестре.</p>
+						<ul>
+							<li>Динамически создоваемые компоненты</li>
+						</ul>
+					</aside>
+				</section>
+			</section>
+			<section>
+				<h1 class="title">
+					<span class="title__row">
+						<span class="title__logic glow"><span class="blink">П</span></span>
+						<span class="title__aspect title__aspect--cache glow">рименение</span>
+					</span>
+				</h1>
+				<ul>
+					<li class="title__aspect--log glow">📓 логировани<span class="title__aspect--error">е</span></li>
+					<li class="title__aspect--error glow">⚠️ обработка о<span class="title__aspect--some">шибок</span>
+					</li>
+					<li class="title__aspect--some glow">🚧 авторизаци<span class="title__aspect--cache glow">я и
+							проверка
+							прав</span></li>
+					<li class="title__aspect--cache glow">💰 кэширован<span class="title__logic glow">ие</span></li>
+					<!-- <li>элементы контрактного программирование</li> -->
+					<li class="title__logic glow">
+						<span class="blink animation-delay--5">✔️ вали</span>дация
+					</li>
+					<!---->
+					<!-- <li>сайдэфекты</li> -->
+					<!-- <li>синхронизации</li> -->
+					<li class="fragment title__aspect--some glow">
+						<span class="title__aspect--error glow">
+							<span class="blink">♻️ реактивное</span>
+						</span>
+						<span class="title__aspect--log glow">
+							<span class="blink animation-delay--5">отображение</span>
+						</span>
+						<span class="title__logic glow">
+							<span class="blink animation-delay--10">вьюшки</span>
+						</span>
+					</li>
+				</ul>
+			</section>
+			<section>
+				<section>
+					<h1 class="title">
+						<span class="title__row">
+							<span class="title__logic glow"><span class="blink">@Д</span></span>
+							<span class="title__aspect title__aspect--cache glow">екораторы</span>
+						</span>
+					</h1>
+				</section>
+				<section>
+					<ul>
+						<li class="fragment title__aspect--log glow">class</li>
+						<li class="fragment title__aspect--error glow">field</li>
+						<li class="fragment title__aspect--error glow">
+							<span class="title__aspect--some glow">static</span> field
+						</li>
+						<li class="fragment title__logic glow">method</li>
+						<li class="fragment title__aspect--cache glow">prop<span
+								class="title__aspect--under glow">er</span>ty</li>
+						<li class="fragment title__logic glow">
+							<span class="title__aspect--some glow">static</span> me<span class="blink">th</span>o<span
+								class="blink animation-delay--5">d</span>
+						</li>
+						<li class="fragment title__aspect--under glow">paramet<span
+								class="title__aspect--cache glow">er</span></li>
+					</ul>
+				</section>
+				<section>
+					<h1 class="title">
+						<span class="title__row">
+							<span class="title__logic glow">
+								<span class="blink animation-delay--10">D</span>
+							</span>
+							<span class="title__aspect title__aspect--log glow">емонстрация</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">E</span>
+							<span class="title__aspect title__aspect--error glow">муляция</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">М</span>
+							<span class="title__aspect title__aspect--cache glow">
+								<span class="blink">анипуляция</span>
+							</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">O</span>
+							<span class="title__aspect title__aspect--under glow">
+								<span class="blink--invert">госпади</span>
+							</span>
+						</span>
+					</h1>
+					<aside class="notes">
+						<p>/demo</p>
+						<p>Вывод:</p>
+						<p>Декораторы - удобный синтаксический сахар.</p>
+						<p>Подходят как для "оборачивания" так и для "разметки" класса.</p>
+					</aside>
+				</section>
+			</section>
+			<section>
+				<section>
+					<h1 class="title">
+						<span class="title__row">
+							<span class="title__logic glow">П</span>
+							<span class="title__aspect title__aspect--log glow">одходы</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">К</span>
+							<span class="title__aspect title__aspect--error glow">хранению</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">И</span>
+							<span class="title__aspect title__aspect--cache glow">
+								<span class="blink">нформации</span>
+							</span>
+						</span>
+					</h1>
+				</section>
+				<section>
+					<ul>
+						<li class="fragment title__aspect--error glow">Хранение не нужно</li>
+						<li class="fragment title__aspect--log glow">Свое хранилище</li>
+						<li class="fragment title__logic glow">Reflect-metadata</li>
+					</ul>
+				</section>
+				<section style="height: 100%;">
+					<svg class="img__code" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+						version="1.1" width="100%" height="100%" viewBox="-0.5 -0.5 167 207">
+						<rect x="3" y="3" width="160" height="200" rx="24" ry="24" fill="#a6e22e" stroke="#86bc1a"
+							stroke-width="7" pointer-events="none"></rect>
+						<rect class="fragment invisible" x="3" y="3" width="160" height="200" rx="24" ry="24"
+							fill="#630fff" stroke="#4b00d6" stroke-width="7" pointer-events="none"></rect>
+						<rect x="23" y="143" width="120" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+							stroke-width="7" pointer-events="none"></rect>
+						<rect x="23" y="23" width="120" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+							stroke-width="7" pointer-events="none"></rect>
+						<rect x="23" y="83" width="120" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+							stroke-width="7" pointer-events="none"></rect>
+						<rect class="fragment invisible" x="23" y="23" width="120" height="40" rx="6" ry="6"
+							fill="#0fffff" stroke="#00d6d6" stroke-width="7" pointer-events="none"></rect>
+						<rect class="fragment invisible" x="23" y="83" width="120" height="40" rx="6" ry="6"
+							fill="#f91569" stroke="#d10550" stroke-width="7" pointer-events="none"></rect>
+						<rect class="fragment invisible" x="23" y="143" width="120" height="40" rx="6" ry="6"
+							fill="#fd8f12" stroke="#d47202" stroke-width="7" pointer-events="none"></rect>
+					</svg>
+					<aside class="notes">
+						<p>Имеем класс</p>
+						<p>Декорируем его</p>
+						<p>Декорируем его члены</p>
+						<p>Аспекты никак друг с другом не связаны</p>
+					</aside>
+				</section>
+				<section style="height: 100%;">
+					<svg class="img__code" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+						version="1.1" width="100%" height="100%" viewBox="-0.5 -0.5 568 528">
+						<g data-index="1">
+							<rect class="fragment invisible" data-fragment-index="1" x="3" y="3" width="160"
+								height="200" rx="24" ry="24" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="1" x="203" y="3" width="160"
+								height="200" rx="24" ry="24" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								stroke-dasharray="21 21" pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="1" x="403" y="3" width="160"
+								height="200" rx="24" ry="24" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								stroke-dasharray="7 7" pointer-events="none"></rect>
+						</g>
+						<g data-index="cache">
+							<rect class="fragment invisible" data-fragment-index="2" x="23" y="143" width="120"
+								height="40" rx="6" ry="6" fill="#fd8f12" stroke="#d47202" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="3" x="223" y="23" width="120"
+								height="40" rx="6" ry="6" fill="#fd8f12" stroke="#d47202" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="4" x="423" y="83" width="120"
+								height="40" rx="6" ry="6" fill="#fd8f12" stroke="#d47202" stroke-width="7"
+								pointer-events="none"></rect>
+						</g>
+
+						<g data-index="log">
+							<rect class="fragment invisible" data-fragment-index="5" x="23" y="83" width="120"
+								height="40" rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="6" x="423" y="23" width="120"
+								height="40" rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="7" x="223" y="143" width="120"
+								height="40" rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7"
+								pointer-events="none"></rect>
+						</g>
+
+						<g data-index="under">
+							<rect class="fragment invisible" data-fragment-index="8" x="223" y="83" width="120"
+								height="40" rx="6" ry="6" fill="#630fff" stroke="#4b00d6" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="9" x="423" y="143" width="120"
+								height="40" rx="6" ry="6" fill="#630fff" stroke="#4b00d6" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="10" x="23" y="23" width="120"
+								height="40" rx="6" ry="6" fill="#630fff" stroke="#4b00d6" stroke-width="7"
+								pointer-events="none"></rect>
+						</g>
+
+						<rect class="fragment invisible" data-fragment-index="11" x="3" y="243" width="560" height="40"
+							rx="6" ry="6" fill="#f91569" stroke="#d10550" stroke-width="7" pointer-events="none"></rect>
+
+						<g data-index="in">
+							<path class="fragment invisible" data-fragment-index="12"
+								d="M 82.67 203 L 82.67 223.17 L 82.67 223.17" fill="none" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="12"
+								d="M 82.67 236.17 L 76.17 223.17 L 89.17 223.17 Z" fill="#d10550" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+
+							<path class="fragment invisible" data-fragment-index="12"
+								d="M 282.67 203 L 282.67 223.17 L 282.67 222.34" fill="none" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="12"
+								d="M 282.67 235.34 L 276.17 222.34 L 289.17 222.34 Z" fill="#d10550" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="12"
+								d="M 482.67 219.84 L 482.67 203.17" fill="none" stroke="#d10550" stroke-width="7"
+								stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="12"
+								d="M 482.67 232.84 L 476.17 219.84 L 489.17 219.84 Z" fill="#d10550" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						</g>
+
+						<g data-index="out">
+							<path class="fragment invisible" data-fragment-index="13"
+								d="M 82.67 302.17 L 82.67 303.17 L 82.67 284" fill="none" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="13"
+								d="M 82.67 315.17 L 76.17 302.17 L 89.17 302.17 Z" fill="#d10550" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="13"
+								d="M 282.67 283 L 282.67 303.17 L 282.67 302.34" fill="none" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="13"
+								d="M 282.67 315.34 L 276.17 302.34 L 289.17 302.34 Z" fill="#d10550" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="13"
+								d="M 482.67 282.33 L 482.67 302.34" fill="none" stroke="#d10550" stroke-width="7"
+								stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="13"
+								d="M 482.67 315.34 L 476.17 302.34 L 489.17 302.34 Z" fill="#d10550" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						</g>
+
+						<g data-index="log-out">
+							<rect class="fragment invisible" data-fragment-index="14" x="3" y="323" width="160"
+								height="200" rx="24" ry="24" fill="#0fffff" stroke="#00d6d6" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="15" x="23" y="405.5" width="120"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="15" x="23" y="343" width="120"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								stroke-dasharray="7 7" pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="15" x="23" y="468" width="120"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								stroke-dasharray="21 21" pointer-events="none"></rect>
+						</g>
+
+						<g data-index="cache-out">
+							<rect class="fragment invisible" data-fragment-index="16" x="203" y="323" width="160"
+								height="200" rx="24" ry="24" fill="#fd8f12" stroke="#d47202" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="17" x="223" y="468" width="120"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="17" x="223" y="343" width="120"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								stroke-dasharray="21 21" pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="17" x="223" y="405.5" width="120"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								stroke-dasharray="7 7" pointer-events="none"></rect>
+						</g>
+
+						<g data-index="under-out">
+							<rect class="fragment invisible" data-fragment-index="18" x="403" y="323" width="160"
+								height="200" rx="24" ry="24" fill="#630fff" stroke="#4b00d6" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="19" x="423" y="343" width="120"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="19" x="423" y="405.5" width="120"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								stroke-dasharray="21 21" pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="19" x="423" y="468" width="120"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								stroke-dasharray="7 7" pointer-events="none"></rect>
+						</g>
+					</svg>
+					<aside class="notes">
+						<p>Имея размеченные классы</p>
+						<p>Можно вытянуть по ним информацию, без разбора файла как кода, но как программы.</p>
+						<p>Например сторонняя библиотека со своими аттрибутами может не изменять поведение класса, а
+							просто использовать его для своих нужд, например генерации документации</p>
+						<ul>
+							<li>
+								<a href="https://docs.nestjs.com/recipes/swagger" target="_blank">Swagger</a>
+							</li>
+						</ul>
+					</aside>
+				</section>
+				<section style="height: 100%">
+					<style>
+						.reveal .slides section .case.visible+.case__after--hide {
+							opacity: 0;
+						}
+					</style>
+					<svg class="img__code" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+						version="1.1" width="100%" height="100%" viewBox="-0.5 -0.5 588 492">
+						<path class="fragment invisible" data-fragment-index="4" d="M 3 295 L 583 295" fill="none"
+							stroke="#d10550" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="0" d="M 33 175 L 3 175" fill="none"
+							stroke="#4b00d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="0" d="M 583 175 L 113 175" fill="none"
+							stroke="#4b00d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<rect class="fragment invisible" data-fragment-index="0" x="33" y="155" width="80" height="40"
+							rx="6" ry="6" fill="#fd8f12" stroke="#d47202" stroke-width="7" pointer-events="none"></rect>
+						<rect class="fragment invisible" data-fragment-index="6" x="33" y="335" width="80" height="40"
+							rx="6" ry="6" fill="#f91569" stroke="#d10550" stroke-width="7" pointer-events="none"></rect>
+						<rect class="fragment invisible case" data-fragment-index="13" x="93" y="50" width="220"
+							height="80" rx="12" ry="12" fill-opacity="0.7" fill="#630fff" stroke="#4b00d6"
+							stroke-opacity="0.7" stroke-width="7" stroke-dasharray="7 7" pointer-events="none"></rect>
+						<rect class="fragment invisible case__after--hide" data-fragment-index="7" x="93" y="50"
+							width="220" height="80" rx="12" ry="12" fill="#630fff" stroke="#4b00d6" stroke-width="7"
+							pointer-events="none"></rect>
+						<!-- <path class="fragment invisible" data-fragment-index="3" d="M 233 230 L 263 230 Q 273 230 273 220 L 273 150.83" fill="none" stroke="#d47202"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="3" d="M 273 137.83 L 279.5 150.83 L 266.5 150.83 Z" fill="#d47202" stroke="#d47202"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path> -->
+						<rect class="fragment invisible" data-fragment-index="4" x="333" y="275" width="80" height="40"
+							rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7" pointer-events="none"></rect>
+						<path class="fragment invisible" data-fragment-index="9"
+							d="M 313 110 L 363 110 Q 373 110 373 120 L 373 254.17" fill="none" stroke="#4b00d6"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="9"
+							d="M 373 267.17 L 366.5 254.17 L 379.5 254.17 Z" fill="#4b00d6" stroke="#4b00d6"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="11" d="M 373 435 L 373 460 L 373 459.17"
+							fill="none" stroke="#0fffff" stroke-width="7" stroke-miterlimit="10" stroke-dasharray="7 7"
+							pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="11"
+							d="M 373 472.17 L 366.5 459.17 L 379.5 459.17 Z" fill="#0fffff" stroke="#0fffff"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<rect class="fragment invisible" data-fragment-index="11" x="333" y="395" width="80" height="40"
+							rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7" stroke-dasharray="7 7"
+							pointer-events="none"></rect>
+						<path class="fragment invisible" data-fragment-index="6"
+							d="M 113 355 L 343 355 Q 353 355 353 345.41 L 353 335.83" fill="none" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="6"
+							d="M 353 322.83 L 359.5 335.83 L 346.5 335.83 Z" fill="#d10550" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="3"
+							d="M 233 230 L 343 230 Q 353 230 353 240 L 353 254.17" fill="none" stroke="#d47202"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="3"
+							d="M 353 267.17 L 346.5 254.17 L 359.5 254.17 Z" fill="#d47202" stroke="#d47202"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="10" d="M 373 315 L 373 374.17" fill="none"
+							stroke="#00d6d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="10"
+							d="M 373 387.17 L 366.5 374.17 L 379.5 374.17 Z" fill="#00d6d6" stroke="#00d6d6"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<rect class="fragment invisible" data-fragment-index="1" x="153" y="210" width="80" height="40"
+							rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7" pointer-events="none"></rect>
+						<path class="fragment invisible" data-fragment-index="2"
+							d="M 73 195 L 73 220 Q 73 230 83 230 L 132.17 230" fill="none" stroke="#d47202"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="2"
+							d="M 145.17 230 L 132.17 236.5 L 132.17 223.5 Z" fill="#d47202" stroke="#d47202"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<rect class="fragment invisible" data-fragment-index="8" x="113" y="70" width="80" height="40"
+							rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7" pointer-events="none"></rect>
+						<rect class="fragment invisible" data-fragment-index="8" x="213" y="70" width="80" height="40"
+							rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7" stroke-dasharray="7 7"
+							pointer-events="none"></rect>
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 393 275 L 393 100 Q 393 90 383 90 L 333.83 90" fill="none" stroke="#00d6d6"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="7"
+							d="M 320.83 90 L 333.83 83.5 L 333.83 96.5 Z" fill="#00d6d6" stroke="#00d6d6"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="12"
+							d="M 503 340 L 503 40 Q 503 30 493 30 L 263 30 Q 253 30 253 39.59 L 253 49.17" fill="none"
+							stroke="#b6a720" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="12"
+							d="M 253 62.17 L 246.5 49.17 L 259.5 49.17 Z" fill="#b6a720" stroke="#b6a720"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="12"
+							d="M 523 340 L 523 20 Q 523 10 513 10 L 163 10 Q 153 10 153 20 L 153 49.17" fill="none"
+							stroke="#b6a720" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="12"
+							d="M 153 62.17 L 146.5 49.17 L 159.5 49.17 Z" fill="#b6a720" stroke="#b6a720"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="12"
+							d="M 483 360 L 403 360 Q 393 360 393 350 L 393 335.83" fill="none" stroke="#b6a720"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="12"
+							d="M 393 322.83 L 399.5 335.83 L 386.5 335.83 Z" fill="#b6a720" stroke="#b6a720"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="12"
+							d="M 523 380 L 523 405 Q 523 415 513 415 L 433.83 415" fill="none" stroke="#b6a720"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="12"
+							d="M 420.83 415 L 433.83 408.5 L 433.83 421.5 Z" fill="#b6a720" stroke="#b6a720"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<rect class="fragment invisible" data-fragment-index="12" x="483" y="340" width="80" height="40"
+							rx="6" ry="6" fill="#94907a" stroke="#77735f" stroke-width="7" pointer-events="none"></rect>
+					</svg>
+					<aside class="notes">
+						<ul>
+							<li>Библиотека предоставляет набор декораторов и/или базовых классов</li>
+							<li>У нас есть класс с бизнесс логикой</li>
+							<li>Декорируем класс</li>
+							<li>Декоратор применяется на этапе инициализации и возвращает декорированный класс</li>
+							<li>Создаем инстанс этого класса</li>
+							<li>
+								<ul>
+									<li>Проксирующий класс-обертка создает инстанс класса</li>
+									<li>Создается проксируемый объект</li>
+									<li>Записывается в хранилище - { инстанс обертки: проксируемый класс }</li>
+								</ul>
+							</li>
+							<li>Обращение с проксируемым объектом происходит через class API</li>
+							<li>А что GC? Следит за прокси-инстансом и при его уничтожении не очистится проксируемый
+								объект</li>
+							<li>Чтобы избежать утечек памяти используем слабое хранилище</li>
+						</ul>
+					</aside>
+				</section>
+				<section style="height: 100%;">
+					<svg class="img__code" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+						version="1.1" width="100%" height="100%" viewBox="-0.5 -0.5 376 472">
+						<rect x="51" y="3" width="320" height="235" rx="35.25" ry="35.25" fill="#630fff"
+							stroke="#4b00d6" stroke-width="7" pointer-events="none"></rect>
+						<rect x="231" y="22.5" width="120" height="195" rx="18" ry="18" fill="#a6e22e" stroke="#86bc1a"
+							stroke-width="7" stroke-dasharray="7 7" pointer-events="none"></rect>
+						<rect x="251" y="42.5" width="80" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+							stroke-width="7" stroke-dasharray="7 7" pointer-events="none"></rect>
+						<rect x="251" y="97.5" width="80" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+							stroke-width="7" stroke-dasharray="7 7" pointer-events="none"></rect>
+						<rect x="251" y="152.5" width="80" height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a"
+							stroke-width="7" stroke-dasharray="7 7" pointer-events="none"></rect>
+						<rect x="51" y="272.5" width="120" height="195" rx="18" ry="18" fill="#0fffff" stroke="#00d6d6"
+							stroke-width="7" pointer-events="none"></rect>
+						<rect x="71" y="350" width="80" height="40" rx="6" ry="6" fill="#0fffff" stroke="#00d6d6"
+							stroke-width="7" pointer-events="none"></rect>
+						<rect x="251" y="402.5" width="80" height="40" rx="6" ry="6" fill="#f91569" stroke="#d10550"
+							stroke-width="7" pointer-events="none"></rect>
+						<rect x="71" y="97.5" width="80" height="40" rx="6" ry="6" fill="#0fffff" stroke="#00d6d6"
+							stroke-width="7" pointer-events="none"></rect>
+						<rect x="71" y="297.5" width="80" height="40" rx="6" ry="6" fill="#630fff" stroke="#4b00d6"
+							stroke-width="7" pointer-events="none"></rect>
+						<rect x="71" y="402.5" width="80" height="40" rx="6" ry="6" fill="#0fffff" stroke="#00d6d6"
+							stroke-width="7" pointer-events="none"></rect>
+						<path class="fragment invisible" data-fragment-index="0"
+							d="M 230.17 422.67 L 200.67 422.67 L 171.49 422.67" fill="none" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" stroke-dasharray="7 7" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="4"
+							d="M 243.17 422.67 L 230.17 429.17 L 230.17 416.17 Z" fill="#d10550" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="0"
+							d="M 158.49 422.67 L 171.49 416.17 L 171.49 429.17 Z" fill="#d10550" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="2"
+							d="M 110.67 276.67 L 110.67 217.67 L 110.67 158.49" fill="none" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" stroke-dasharray="7 7" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="4"
+							d="M 110.67 289.67 L 104.17 276.67 L 117.17 276.67 Z" fill="#d10550" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="2"
+							d="M 110.67 145.49 L 117.17 158.49 L 104.17 158.49 Z" fill="#d10550" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="1"
+							d="M 49.84 422.67 L 10.67 422.67 L 10.67 317.67 L 49.84 317.67" fill="none" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" stroke-dasharray="7 7" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="4"
+							d="M 62.84 422.67 L 49.84 429.17 L 49.84 416.17 Z" fill="#d10550" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="1"
+							d="M 62.84 317.67 L 49.84 324.17 L 49.84 311.17 Z" fill="#d10550" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="3"
+							d="M 171.83 117.67 L 200.67 117.67 L 200.67 172.67 L 229.84 172.67" fill="none"
+							stroke="#d10550" stroke-width="7" stroke-miterlimit="10" stroke-dasharray="7 7"
+							pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="4"
+							d="M 158.83 117.67 L 171.83 111.17 L 171.83 124.17 Z" fill="#d10550" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="3"
+							d="M 242.84 172.67 L 229.84 179.17 L 229.84 166.17 Z" fill="#d10550" stroke="#d10550"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="5"
+							d="M 290.67 381.67 L 290.67 297.67 L 290.67 213.49" fill="none" stroke="#77735f"
+							stroke-width="7" stroke-miterlimit="10" stroke-dasharray="7 7" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="5"
+							d="M 290.67 394.67 L 284.17 381.67 L 297.17 381.67 Z" fill="#77735f" stroke="#77735f"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						<path class="fragment invisible" data-fragment-index="5"
+							d="M 290.67 200.49 L 297.17 213.49 L 284.17 213.49 Z" fill="#77735f" stroke="#77735f"
+							stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+					</svg>
+					<aside class="notes">
+						<ul>
+							<li>Клиентский код обращается к члену классу</li>
+							<li>Член класса проксирует запрос</li>
+							<li>В классе есть ссылка на хранилище</li>
+							<li>Находит ссылку на соответствующий объект в хранилище</li>
+							<li>Вызывает необходимый метод на хранилище</li>
+							<li>Тем самым проксирует запрос</li>
+						</ul>
+					</aside>
+				</section>
+				<section>
+					<h1 class="title">
+						<span class="title__row">
+							<span class="title__logic glow">
+								<span class="blink animation-delay--10">D</span>
+							</span>
+							<span class="title__aspect title__aspect--log glow">емонстрация</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">E</span>
+							<span class="title__aspect title__aspect--error glow">муляция</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">М</span>
+							<span class="title__aspect title__aspect--cache glow">
+								<span class="blink">анипуляция</span>
+							</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">O</span>
+							<span class="title__aspect title__aspect--under glow">
+								<span class="blink--invert">госпади</span>
+							</span>
+						</span>
+					</h1>
+					<aside class="notes">
+						<p>/demo1</p>
+					</aside>
+				</section>
+				<section style="height: 100%;">
+					<svg class="img__code" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+						version="1.1" width="100%" height="100%" viewBox="-0.5 -0.5 648 575">
+
+						<g data-index="0">
+							<path class="fragment invisible" data-fragment-index="0" d="M 43 103 L 3 103" fill="none"
+								stroke="#4b00d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="0" d="M 643 103 L 123 103" fill="none"
+								stroke="#4b00d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<rect class="fragment invisible" data-fragment-index="0" x="43" y="83" width="80"
+								height="40" rx="6" ry="6" fill="#dbca33" stroke="#b6a720" stroke-width="7"
+								pointer-events="none"></rect>
+						</g>
+
+						<g data-index="5">
+							<path class="fragment invisible" data-fragment-index="5" d="M 3 343 L 643 343" fill="none"
+								stroke="#d10550" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<rect class="fragment invisible" data-fragment-index="5" x="43" y="383" width="80"
+								height="40" rx="6" ry="6" fill="#f91569" stroke="#d10550" stroke-width="7"
+								pointer-events="none"></rect>
+						</g>
+
+						<g data-index="4">
+							<rect class="fragment invisible" data-fragment-index="4" x="323" y="323" width="80"
+								height="40" rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="4" x="423" y="323" width="80"
+								height="40" rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="4" x="523" y="323" width="80"
+								height="40" rx="6" ry="6" fill="#0fffff" stroke="#00d6d6" stroke-width="7"
+								pointer-events="none"></rect>
+							<path class="fragment invisible" data-fragment-index="4"
+								d="M 203 163 L 533 163 Q 543 163 543 173 L 543 305.42" fill="none" stroke="#b6a720"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="4"
+								d="M 543 315.17 L 536.5 302.17 L 543 305.42 L 549.5 302.17 Z" fill="#b6a720"
+								stroke="#b6a720" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="4"
+								d="M 203 223 L 433 223 Q 443 223 443 233 L 443 305.42" fill="none" stroke="#b6a720"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="4"
+								d="M 443 315.17 L 436.5 302.17 L 443 305.42 L 449.5 302.17 Z" fill="#b6a720"
+								stroke="#b6a720" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="4"
+								d="M 203 283 L 333 283 Q 343 283 343 293 L 343 305.42" fill="none" stroke="#b6a720"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="4"
+								d="M 343 315.17 L 336.5 302.17 L 343 305.42 L 349.5 302.17 Z" fill="#b6a720"
+								stroke="#b6a720" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+
+						</g>
+
+						<g data-index="3">
+							<rect class="fragment invisible" data-fragment-index="3" x="43" y="3" width="280"
+								height="40" rx="6" ry="6" fill="#630fff" stroke="#4b00d6" stroke-width="7"
+								pointer-events="none"></rect>
+							<path class="fragment invisible" data-fragment-index="3"
+								d="M 203 283 L 243 283 Q 253 283 253 273 L 253 60.58" fill="none" stroke="#b6a720"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="3"
+								d="M 253 50.83 L 259.5 63.83 L 253 60.58 L 246.5 63.83 Z" fill="#b6a720"
+								stroke="#b6a720" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="3"
+								d="M 203 163 L 243 163 Q 253 163 253 153 L 253 60.58" fill="none" stroke="#b6a720"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="3"
+								d="M 253 50.83 L 259.5 63.83 L 253 60.58 L 246.5 63.83 Z" fill="#b6a720"
+								stroke="#b6a720" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="3"
+								d="M 203 223 L 243 223 Q 253 223 253 213 L 253 60.58" fill="none" stroke="#b6a720"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="3"
+								d="M 253 50.83 L 259.5 63.83 L 253 60.58 L 246.5 63.83 Z" fill="#b6a720"
+								stroke="#b6a720" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						</g>
+
+						<g data-index="1">
+							<rect class="fragment invisible" data-fragment-index="1" x="123" y="143" width="80"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="1" x="123" y="203" width="80"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="1" x="123" y="263" width="80"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" stroke-width="7"
+								pointer-events="none"></rect>
+						</g>
+
+						<g data-index="2">
+							<path class="fragment invisible" data-fragment-index="2"
+								d="M 83 123 L 83 153 Q 83 163 93 163 L 105.42 163" fill="none" stroke="#b6a720"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="2"
+								d="M 115.17 163 L 102.17 169.5 L 105.42 163 L 102.17 156.5 Z" fill="#b6a720"
+								stroke="#b6a720" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="2"
+								d="M 83 123 L 83 213 Q 83 223 93 223 L 105.42 223" fill="none" stroke="#b6a720"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="2"
+								d="M 115.17 223 L 102.17 229.5 L 105.42 223 L 102.17 216.5 Z" fill="#b6a720"
+								stroke="#b6a720" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="2"
+								d="M 83 123 L 83 273 Q 83 283 93 283 L 105.42 283" fill="none" stroke="#b6a720"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="2"
+								d="M 115.17 283 L 102.17 289.5 L 105.42 283 L 102.17 276.5 Z" fill="#b6a720"
+								stroke="#b6a720" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						</g>
+
+						<g data-index="6">
+							<path class="fragment invisible" data-fragment-index="6"
+								d="M 123 403 L 333 403 Q 343 403 343 393 L 343 380.58" fill="none" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="6"
+								d="M 343 370.83 L 349.5 383.83 L 343 380.58 L 336.5 383.83 Z" fill="#d10550"
+								stroke="#d10550" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="6"
+								d="M 123 403 L 433 403 Q 443 403 443 393 L 443 380.58" fill="none" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="6"
+								d="M 443 370.83 L 449.5 383.83 L 443 380.58 L 436.5 383.83 Z" fill="#d10550"
+								stroke="#d10550" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="6"
+								d="M 123 403 L 533 403 Q 543 403 543 393 L 543 380.58" fill="none" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="6"
+								d="M 543 370.83 L 549.5 383.83 L 543 380.58 L 536.5 383.83 Z" fill="#d10550"
+								stroke="#d10550" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						</g>
+
+						<g data-index="7">
+							<path class="fragment invisible" data-fragment-index="7"
+								d="M 383 323 L 383 43 Q 383 33 373 33 L 340.58 33" fill="none" stroke="#00d6d6"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="7"
+								d="M 330.83 33 L 343.83 26.5 L 340.58 33 L 343.83 39.5 Z" fill="#00d6d6"
+								stroke="#00d6d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="7"
+								d="M 483 323 L 483 43 Q 483 33 473 33 L 340.58 33" fill="none" stroke="#00d6d6"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="7"
+								d="M 330.83 33 L 343.83 26.5 L 340.58 33 L 343.83 39.5 Z" fill="#00d6d6"
+								stroke="#00d6d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="7"
+								d="M 583 323 L 583 43 Q 583 33 573 33 L 340.58 33" fill="none" stroke="#00d6d6"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="7"
+								d="M 330.83 33 L 343.83 26.5 L 340.58 33 L 343.83 39.5 Z" fill="#00d6d6"
+								stroke="#00d6d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						</g>
+
+						<g data-index="8">
+							<path class="fragment invisible" data-fragment-index="8"
+								d="M 323 13 L 553 13 Q 563 13 563 23 L 563 305.42" fill="none" stroke="#4b00d6"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="8"
+								d="M 563 315.17 L 556.5 302.17 L 563 305.42 L 569.5 302.17 Z" fill="#4b00d6"
+								stroke="#4b00d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="8"
+								d="M 323 13 L 453 13 Q 463 13 463 23 L 463 305.42" fill="none" stroke="#4b00d6"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="8"
+								d="M 463 315.17 L 456.5 302.17 L 463 305.42 L 469.5 302.17 Z" fill="#4b00d6"
+								stroke="#4b00d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="8"
+								d="M 323 13 L 353 13 Q 363 13 363 23 L 363 305.42" fill="none" stroke="#4b00d6"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="8"
+								d="M 363 315.17 L 356.5 302.17 L 363 305.42 L 369.5 302.17 Z" fill="#4b00d6"
+								stroke="#4b00d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						</g>
+
+						<g data-index="9">
+							<path class="fragment invisible" data-fragment-index="9" d="M 363 363 L 363 425.42"
+								fill="none" stroke="#00d6d6" stroke-width="7" stroke-miterlimit="10"
+								pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="9"
+								d="M 363 435.17 L 356.5 422.17 L 363 425.42 L 369.5 422.17 Z" fill="#00d6d6"
+								stroke="#00d6d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="9" d="M 463 363 L 463 425.42"
+								fill="none" stroke="#00d6d6" stroke-width="7" stroke-miterlimit="10"
+								pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="9"
+								d="M 463 435.17 L 456.5 422.17 L 463 425.42 L 469.5 422.17 Z" fill="#00d6d6"
+								stroke="#00d6d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="9" d="M 563 363 L 563 425.42"
+								fill="none" stroke="#00d6d6" stroke-width="7" stroke-miterlimit="10"
+								pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="9"
+								d="M 563 435.17 L 556.5 422.17 L 563 425.42 L 569.5 422.17 Z" fill="#00d6d6"
+								stroke="#00d6d6" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<rect class="fragment invisible" data-fragment-index="9" x="323" y="443" width="80"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" fill="#a6e22e"
+								stroke-width="7" stroke-dasharray="7 7" pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="9" x="423" y="443" width="80"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" fill="#a6e22e"
+								stroke-width="7" stroke-dasharray="7 7" pointer-events="none"></rect>
+							<rect class="fragment invisible" data-fragment-index="9" x="523" y="443" width="80"
+								height="40" rx="6" ry="6" fill="#a6e22e" stroke="#86bc1a" fill="#a6e22e"
+								stroke-width="7" stroke-dasharray="7 7" pointer-events="none"></rect>
+						</g>
+
+						<g data-index="10">
+							<path class="fragment invisible" data-fragment-index="10"
+								d="M 83 423 L 83 453 Q 83 463 93 463 L 305.42 463" fill="none" stroke="#d10550"
+								stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="10"
+								d="M 315.17 463 L 302.17 469.5 L 305.42 463 L 302.17 456.5 Z" fill="#d10550"
+								stroke="#d10550" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						</g>
+
+						<g data-index="11">
+							<path class="fragment invisible" data-fragment-index="11" d="M 363 483 L 363 545.42"
+								fill="none" stroke="#86bc1a" stroke-width="7" stroke-miterlimit="10"
+								stroke-dasharray="7 7" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="11"
+								d="M 363 555.17 L 356.5 542.17 L 363 545.42 L 369.5 542.17 Z" fill="#86bc1a"
+								stroke="#86bc1a" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="11" d="M 463 483 L 463 545.42"
+								fill="none" stroke="#86bc1a" stroke-width="7" stroke-miterlimit="10"
+								stroke-dasharray="7 7" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="11"
+								d="M 463 555.17 L 456.5 542.17 L 463 545.42 L 469.5 542.17 Z" fill="#86bc1a"
+								stroke="#86bc1a" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="11" d="M 563 483 L 563 545.42"
+								fill="none" stroke="#86bc1a" stroke-width="7" stroke-miterlimit="10"
+								stroke-dasharray="7 7" pointer-events="none"></path>
+							<path class="fragment invisible" data-fragment-index="11"
+								d="M 563 555.17 L 556.5 542.17 L 563 545.42 L 569.5 542.17 Z" fill="#86bc1a"
+								stroke="#86bc1a" stroke-width="7" stroke-miterlimit="10" pointer-events="none"></path>
+						</g>
+					</svg>
+					<aside class="notes">
+						<p>Рассмотрим способ организации продвинутой схемы с хранилищем.</p>
+						<ol>
+							<li>
+								АОП Библиотека предоставляет нам свои функции, классы, декораторы.
+							</li>
+							<li>
+								В клиентском коде мы имеем свои классы, реализующие бизнесс логику.
+							</li>
+							<li>
+								Декорируем существующие классы. "Помечаем" члены или наследуемся от базового
+								библиотечного класса.
+							</li>
+							<li>
+								Декороры записывают информацию в shared хранилище, которое находится внутри пакета.
+							</li>
+							<li>
+								И возвращает прозрачный проксирующий класс-обертку с доопределенным конструктором.
+							</li>
+							<li>
+								Обращаясь к классу снаружи
+							</li>
+							<li>
+								При создании экземпляра класса
+							</li>
+							<li>
+								Доопределенный конструктор просканирует "помеченные" члены
+							</li>
+							<li>
+								Вытянет метаинформацию о них и доопределит их поведение в соответствии с реализуемой
+								сквозной функциональностью.
+							</li>
+							<li>Обращаясь к инстансу</li>
+							<li>
+								Получаем доопределенный сквозной эффект
+							</li>
+						</ol>
+					</aside>
+				</section>
+				<section>
+					<h1 class="title">
+						<span class="title__row">
+							<span class="title__logic glow">
+								<span class="blink animation-delay--10">D</span>
+							</span>
+							<span class="title__aspect title__aspect--log glow">емонстрация</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">E</span>
+							<span class="title__aspect title__aspect--error glow">муляция</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">М</span>
+							<span class="title__aspect title__aspect--cache glow">
+								<span class="blink">анипуляция</span>
+							</span>
+						</span>
+						<span class="title__row">
+							<span class="title__logic glow">O</span>
+							<span class="title__aspect title__aspect--under glow">
+								<span class="blink--invert">госпади</span>
+							</span>
+						</span>
+					</h1>
+					<aside class="notes">
+						<p>/demo2</p>
+					</aside>
+				</section>
+			</section>
+			<section>
+				<h1 class="title">
+					<span class="title__row">
+						<span class="title__logic glow"><span class="blink">😟</span> В</span>
+						<span class="title__aspect title__aspect--log glow">опросы</span>
+					</span>
+					<span class="title__row">
+						<span class="title__logic glow">😬 П</span>
+						<span class="title__aspect title__aspect--error glow">рения</span>
+					</span>
+					<span class="title__row">
+						<span class="title__logic glow">👌 С</span>
+						<span class="title__aspect title__aspect--cache glow">
+							<span class="blink">пасибо</span>
+						</span>
+					</span>
+				</h1>
+			</section>
+			<section>
+				<h1 class="title">
+					<span class="title__row">
+						<span class="title__logic glow">П</span>
+						<span class="title__aspect title__aspect--under glow">очитать</span>
+					</span>
+				</h1>
+				<br>
+				<ul>
+					<li  class="title__aspect--cache glow">
+						<a href="https://habr.com/ru/post/114649/">
+							Знакомство с АОП
+						</a>
+					</li>
+					<li class="title__aspect--error glow">
+						<a href="https://k1r0s.github.io/aop-intro/">
+							Слайды про АОП
+						</a>
+					</li>
+					<li class="title__aspect--log glow">
+						<a href="http://blog.wolksoftware.com/decorators-reflection-javascript-typescript">
+							Цикл статей от 🚽 до 🚀
+						</a>
+					</li>
+				</ul>
+			</section>
+		</div>
+	</div>
+
+	<script src="js/reveal.js"></script>
+
+	<script>
+		// More info about config & dependencies:
+		// - https://github.com/hakimel/reveal.js#configuration
+		// - https://github.com/hakimel/reveal.js#dependencies
+		Reveal.initialize({
+			history: true,
+			slideNumber: true,
+			showNotes: true,
+			dependencies: [{
+				src: 'plugin/markdown/marked.js'
+			},
+			{
+				src: 'plugin/markdown/markdown.js'
+			},
+			{
+				src: 'plugin/notes/notes.js',
+				async: true
+			},
+			{
+				src: 'plugin/highlight/highlight.js',
+				async: true
+			},
+				// {src: 'node_modules/revealjs-animated/dist/revealjs-animated.js', async: true}
+			]
+		});
+	</script>
+</body>
+
+</html>
